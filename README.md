@@ -208,3 +208,4 @@ helm delete wp-k8s-$USER
 ```
    
  
+You can find additional content from the long version of the training [here](k8s-course.zip).
