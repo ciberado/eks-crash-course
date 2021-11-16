@@ -3,6 +3,8 @@
 ## Configuration
 
 ```bash
+export AWS_DEFAULT_REGION=eu-west-1
+
 eksctl create cluster --name crashcourse
 eksctl get clusters --region eu-west-1
 aws eks --region eu-west-1 update-kubeconfig --name crashcourse
