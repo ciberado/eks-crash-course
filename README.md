@@ -78,10 +78,13 @@ kubectl get services
 ADDR=$(kubectl get services pokemonservice -ojsonpath='{.status.loadBalancer.ingress[0].hostname}')
 echo Open http://$ADDR
 ```
-## Multicontainer pod
+## Multicontainer pod and private service
 
 ```bash
 kubectl delete -f demo-pod.yaml --namespace demo-$USER
+kubectl delete -f demo-service.yaml --namespace demo-$USER
+sed -i 's/LoadBalancer/ClusterIP/g' demo-service.yaml
+kubectl apply -f demo-service.yaml --namespace demo-$USER
 ```
 
 ```bash
@@ -111,9 +114,18 @@ kubectl logs pokemon web
 kubectl logs pokemon nginx
 ```
 
-```bash
-ADDR=$(kubectl get services pokemonservice -ojsonpath='{.status.loadBalancer.ingress[0].hostname}')
-curl --head http://$ADDR/?[1-10]
+```
+PORT=$(( ( RANDOM % 1000 )  + 8000 ))
+echo $PORT
+kubectl port-forward service/pokemonservice -n demo-$USER $PORT:80 --address='0.0.0.0' &
+PID=$!
+curl --head localhost:$PORT
+curl --head localhost/?[1-10]
+```
+
+```
+kill -9 $PID
+kubectl delete -f .
 ```
 
 ## Elasticity and application lifecycle
