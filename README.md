@@ -120,7 +120,7 @@ echo $PORT
 kubectl port-forward service/pokemonservice -n demo-$USER $PORT:80 --address='0.0.0.0' &
 PID=$!
 curl --head localhost:$PORT
-curl --head localhost/?[1-10]
+curl --head localhost:$PORT/?[1-10]
 ```
 
 ```
