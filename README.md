@@ -206,12 +206,12 @@ helm install wp-k8s-$USER bitnami/wordpress --set serviceType=LoadBalancer
 ```
 
 ```bash
-export SERVICE_IP=$(kubectl get svc --namespace demo-student7 wp-k8s-student7-wordpress \
+export SERVICE_IP=$(kubectl get svc --namespace demo-$USER wp-k8s-$USER-wordpress \
   --template "{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}")
 echo "WordPress URL: http://$SERVICE_IP/"
 echo "WordPress Admin URL: http://$SERVICE_IP/admin"
 echo Username: user
-echo Password: $(kubectl get secret --namespace demo-student7 wp-k8s-student7-wordpress \
+echo Password: $(kubectl get secret --namespace demo-$USER wp-k8s-$USER-wordpress \
   -o jsonpath="{.data.wordpress-password}" | base64 --decode)
 ```
 
