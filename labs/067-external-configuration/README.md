@@ -36,7 +36,7 @@ kubectl describe configmaps project-config
 * Even if it is a bit long, take time to create and read the following file describing a deployment with the previous configuration loaded using two different methods (environment variables and files), and how to inject Kubernetes *metadata* into the pod (using `.valueFrom.fieldRef`)
 
 ```yaml
-cat << EOF > config-demo.yaml
+cat << 'EOF' > config-demo.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
