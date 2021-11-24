@@ -1,0 +1,24 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: beta-service
+spec:
+  selector:
+    app: beta-app
+  ports:
+  - name: http
+    protocol: TCP
+    port: 8080
+    targetPort: 80
+---    
+apiVersion: v1
+kind: Pod
+metadata:
+  name: beta-pod
+  labels:
+    app: beta-app
+spec:
+  containers:
+  - name: beta-bash
+    image: bash
+    command: ['sh', '-c', 'echo beta-bash started && sleep 600']
