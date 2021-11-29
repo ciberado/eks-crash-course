@@ -4,9 +4,14 @@
 
 ```bash
 export AWS_DEFAULT_REGION=eu-west-1
+```
 
+```bash
 eksctl create cluster --name crashcourse
 eksctl get clusters --region eu-west-1
+```
+
+```bash
 aws eks --region eu-west-1 update-kubeconfig --name crashcourse
 kubectl get node
 ```
