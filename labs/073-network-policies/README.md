@@ -98,11 +98,11 @@ bash# exit
 apiVersion: networking.k8s.io.v1
 kind: NetworkPolicy
 metadata:
-	name: deny-by-default
+  name: deny-by-default
 spec:
-	podSelector: {}
-	policyTypes:
-	- Ingress
+  podSelector: {}
+  policyTypes:
+  - Ingress
 ```
 
 ## Isolating namespaces
