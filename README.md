@@ -187,6 +187,7 @@ kubectl apply -f demo-lifecycle.yaml
 
 ```bash
 sed -i 's/: 2/: 4/g' demo-lifecycle.yaml
+kubectl apply -f demo-lifecycle.yaml
 kubectl get pods
 ```
 
