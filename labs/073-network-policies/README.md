@@ -70,7 +70,7 @@ bash# exit
 * Do the same from a pod labeled with `run=access` and get that wonderful frontpage
 
 ``` bash
-kubectl run access --rm -ti --image bash
+kubectl run access --rm -ti --image bash -n demo-$USER
 bash# wget -O - -q http://nginx-deployment    #Will work
 bash# exit
 ```
