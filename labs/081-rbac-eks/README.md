@@ -25,14 +25,14 @@ echo Your account is $ACCOUNT_ID
 * Define the role the user will assume (we prefix it with `$USER` to avoid role name conflicts, but in a real environment that would not happen):
 
 ```
-ROLE_POLICY=$(echo -n '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"AWS":"arn:aws:iam::'; echo -n "$ACCOUNT_ID"; echo -n ':root"},"Action":"sts:AssumeRole","Condition":{}}]}')
+ROLE_TRUST_POLICY=$(echo -n '{"Version":"2012-10-17","Statement":[{"Effect":"Allow","Principal":{"AWS":"arn:aws:iam::'; echo -n "$ACCOUNT_ID"; echo -n ':root"},"Action":"sts:AssumeRole","Condition":{}}]}')
 
-echo $ROLE_POLICY | jq
+echo $ROLE_TRUST_POLICY | jq
 
 aws iam create-role \
   --role-name ${USER}k8sDevIAMRole \
   --description "Kubernetes developer role (for AWS IAM Authenticator for Kubernetes)." \
-  --assume-role-policy-document "$ROLE_POLICY" \
+  --assume-role-policy-document "$ROLE_TRUST_POLICY" \
   --output text \
   --query 'Role.Arn'
 ```
@@ -46,7 +46,7 @@ aws iam create-group --group-name ${USER}k8sDevIAMGroup
 * Attach a policy to it, allowing its members to assume the role `${USER}k8sDevIAMRole`
 
 ```bash
-DEV_GROUP_POLICY=$(echo -n '{
+ROLE_PERM_POLICY=$(echo -n '{
   "Version": "2012-10-17",
   "Statement": [
     {
@@ -65,12 +65,12 @@ DEV_GROUP_POLICY=$(echo -n '{
     }    
   ]
 }')
-echo $DEV_GROUP_POLICY | jq
+echo $ROLE_PERM_POLICY | jq
 
 aws iam put-group-policy \
 --group-name ${USER}k8sDevIAMGroup \
 --policy-name ${USER}k8sDevPolicy \
---policy-document "$DEV_GROUP_POLICY"
+--policy-document "$ROLE_PERM_POLICY"
 ```
 
 * Check the group is in place
