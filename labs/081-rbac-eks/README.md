@@ -230,7 +230,7 @@ aws sts get-caller-identity --profile eksDevProfile
 eksctl utils write-kubeconfig \
   --cluster $CLUSTER_NAME\
   --authenticator-role-arn arn:aws:iam::${ACCOUNT_ID}:role/DevIAMRole${USER} \
-  --profile ${USER}IAMUser
+  --profile IAMUser${USER}
 ```
 
 ## Testing the user
