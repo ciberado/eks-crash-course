@@ -30,7 +30,7 @@ ROLE_TRUST_POLICY=$(echo -n '{"Version":"2012-10-17","Statement":[{"Effect":"All
 echo $ROLE_TRUST_POLICY | jq
 
 aws iam create-role \
-  --role-name ${USER}k8sDevIAMRole \
+  --role-name DevIAMRole${USER} \
   --description "Kubernetes developer role (for AWS IAM Authenticator for Kubernetes)." \
   --assume-role-policy-document "$ROLE_TRUST_POLICY" \
   --output text \
@@ -40,10 +40,10 @@ aws iam create-role \
 * Create the group
 
 ```bash
-aws iam create-group --group-name ${USER}k8sDevIAMGroup
+aws iam create-group --group-name DevIAMGroup${USER}
 ```
 
-* Attach a policy to it, allowing its members to assume the role `${USER}k8sDevIAMRole`
+* Attach a policy to it, allowing its members to assume the role `DevIAMRole${USER}`
 
 ```bash
 ROLE_PERM_POLICY=$(echo -n '{
@@ -53,7 +53,7 @@ ROLE_PERM_POLICY=$(echo -n '{
       "Sid": "AllowAssumeOrganizationAccountRole",
       "Effect": "Allow",
       "Action": "sts:AssumeRole",
-      "Resource": "arn:aws:iam::'; echo -n "$ACCOUNT_ID"; echo -n ":role/${USER}k8sDevIAMRole"; echo -n '"
+      "Resource": "arn:aws:iam::'; echo -n "$ACCOUNT_ID"; echo -n ":role/DevIAMRole${USER}"; echo -n '"
     },
     {
         "Effect": "Allow",
@@ -68,8 +68,8 @@ ROLE_PERM_POLICY=$(echo -n '{
 echo $ROLE_PERM_POLICY | jq
 
 aws iam put-group-policy \
---group-name ${USER}k8sDevIAMGroup \
---policy-name ${USER}k8sDevPolicy \
+--group-name DevIAMGroup${USER} \
+--policy-name DevPolicy${USER} \
 --policy-document "$ROLE_PERM_POLICY"
 ```
 
@@ -84,25 +84,25 @@ aws iam list-groups --output table
 * Create the user
 
 ```bash
-aws iam create-user --user-name ${USER}IAMUser
+aws iam create-user --user-name IAMUser${USER}
 ```
 
 * Enroll the user in the dev group
 
 ```bash
-aws iam add-user-to-group --group-name ${USER}k8sDevIAMGroup --user-name ${USER}IAMUser
+aws iam add-user-to-group --group-name DevIAMGroup${USER} --user-name IAMUser${USER}
 ```
 
 * Check everything is fine
 
 ```bash
-aws iam get-group --group-name ${USER}k8sDevIAMGroup
+aws iam get-group --group-name DevIAMGroup${USER}
 ```
 
 * Generate AK/SC credentials
 
 ```bash
-aws iam create-access-key --user-name ${USER}IAMUser | tee /tmp/${USER}IAMUser.json
+aws iam create-access-key --user-name IAMUser${USER} | tee /tmp/IAMUser${USER}.json
 ```
 
 ## EKS Configuration
@@ -173,7 +173,7 @@ CLUSTER_NAME=$(kubectl config view --minify -o jsonpath='{.clusters[].name}' | c
 
 eksctl create iamidentitymapping \
   --cluster $CLUSTER_NAME \
-  --arn arn:aws:iam::${ACCOUNT_ID}:role/${USER}k8sDevIAMRole \
+  --arn arn:aws:iam::${ACCOUNT_ID}:role/DevIAMRole${USER} \
   --username $USER-dev-user
 ```
 
@@ -205,22 +205,22 @@ export AWS_DEFAULT_REGION=eu-west-1
 mkdir ~/.aws
 
 cat << EOF > ~/.aws/credentials
-[${USER}IAMUser]
-aws_access_key_id=$(jq -r .AccessKey.AccessKeyId /tmp/${USER}IAMUser.json)
-aws_secret_access_key=$(jq -r .AccessKey.SecretAccessKey /tmp/${USER}IAMUser.json)
+[IAMUser${USER}]
+aws_access_key_id=$(jq -r .AccessKey.AccessKeyId /tmp/IAMUser${USER}.json)
+aws_secret_access_key=$(jq -r .AccessKey.SecretAccessKey /tmp/IAMUser${USER}.json)
 EOF
 
 cat << EOF > ~/.aws/config
 [profile eksDevProfile]
-role_arn=arn:aws:iam::${ACCOUNT_ID}:role/${USER}k8sDevIAMRole
-source_profile=${USER}IAMUser
+role_arn=arn:aws:iam::${ACCOUNT_ID}:role/DevIAMRole${USER}
+source_profile=IAMUser${USER}
 EOF
 ```
 
 * Check it is correctly configured:
 
 ```bash
-aws sts get-caller-identity --profile ${USER}IAMUser
+aws sts get-caller-identity --profile IAMUser${USER}
 aws sts get-caller-identity --profile eksDevProfile
 ```
 
@@ -229,7 +229,7 @@ aws sts get-caller-identity --profile eksDevProfile
 ```bash
 eksctl utils write-kubeconfig \
   --cluster $CLUSTER_NAME\
-  --authenticator-role-arn arn:aws:iam::${ACCOUNT_ID}:role/${USER}k8sDevIAMRole \
+  --authenticator-role-arn arn:aws:iam::${ACCOUNT_ID}:role/DevIAMRole${USER} \
   --profile ${USER}IAMUser
 ```
 
@@ -262,14 +262,14 @@ eksctl utils write-kubeconfig --cluster $CLUSTER_NAME
 kubectl delete namespace dev-$USER
 eksctl delete iamidentitymapping \
   --cluster $CLUSTER_NAME \
-  --arn arn:aws:iam::${ACCOUNT_ID}:role/${USER}k8sDevIAMRole
-aws iam remove-user-from-group --group-name ${USER}k8sDevIAMGroup --user-name ${USER}IAMUser
-aws iam delete-group-policy --group-name ${USER}k8sDevIAMGroup --policy-name ${USER}k8sDevPolicy 
-aws iam delete-group --group-name ${USER}k8sDevIAMGroup
-aws iam delete-access-key --user-name ${USER}IAMUser --access-key-id=$(jq -r .AccessKey.AccessKeyId /tmp/${USER}IAMUser.json)
+  --arn arn:aws:iam::${ACCOUNT_ID}:role/DevIAMRole${USER}
+aws iam remove-user-from-group --group-name DevIAMGroup${USER} --user-name IAMUser${USER}
+aws iam delete-group-policy --group-name DevIAMGroup${USER} --policy-name DevPolicy${USER}
+aws iam delete-group --group-name DevIAMGroup${USER}
+aws iam delete-access-key --user-name IAMUser${USER} --access-key-id=$(jq -r .AccessKey.AccessKeyId /tmp/IAMUser${USER}.json)
 
-aws iam delete-user --user-name ${USER}IAMUser
-aws iam delete-role --role-name ${USER}k8sDevIAMRole
+aws iam delete-user --user-name IAMUser${USER}
+aws iam delete-role --role-name DevIAMRole${USER}
 
 rm  ~/.aws/{config,credentials}
 
