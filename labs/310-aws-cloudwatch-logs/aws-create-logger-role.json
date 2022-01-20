@@ -1,5 +1,0 @@
-{
-    "RoleName": "k8s-logger",
-    "AssumeRolePolicyDocument": "{ \"Version\": \"2012-10-17\", \"Statement\": [ { \"Effect\": \"Allow\", \"Principal\": { \"Service\": \"ec2.amazonaws.com\" }, \"Action\": \"sts:AssumeRole\" }, { \"Sid\": \"\", \"Effect\": \"Allow\", \"Principal\": { \"AWS\": \"NODES_ROLE_ARN\" }, \"Action\": \"sts:AssumeRole\" } ] }",
-    "Description": "Allows interaction with cw logs"
-}
