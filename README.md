@@ -95,7 +95,7 @@ spec:
   replicas: 2
   selector:
     matchLabels:
-      app: web
+      app: pokemon
   template:
     metadata:
       labels:
