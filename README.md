@@ -79,20 +79,13 @@ echo Open http://$ADDR
 ```
 
 ```bash
-delete ns demo-$USER
+kubectl delete -f demo-pod.yaml
 ```
 
 ## Elasticity and application lifecycle
 
 ```bash
-cat << EOF > demo-lifecycle.yaml
-
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: demo-$USER
-
----
+cat << EOF > demo-deployment.yaml
 
 apiVersion: apps/v1
 kind: Deployment
@@ -111,38 +104,21 @@ spec:
       containers:
       - image: ciberado/pokemon-nodejs:0.0.1
         name: web
-
----
-
-apiVersion: v1
-kind: Service
-metadata:
-  name: demoservice
-spec:
-  ports:
-  - port: 80
-    protocol: TCP
-    targetPort: 80
-  selector:
-    app: web
-  type: LoadBalancer
-
-EOF
 ```
 
 ```bash
-kubectl apply -f demo-lifecycle.yaml
+kubectl apply -f demo-deployment.yaml
 ```
 
 ```bash
-sed -i 's/: 2/: 4/g' demo-lifecycle.yaml
-kubectl apply -f demo-lifecycle.yaml
+sed -i 's/: 2/: 4/g' demo-deployment.yaml
+kubectl apply -f demo-deployment.yaml
 kubectl get pods
 ```
 
 ```bash
-sed -i 's/0.0.1/0.0.2/g' demo-lifecycle.yaml
-kubectl apply -f demo-lifecycle.yaml
+sed -i 's/0.0.1/0.0.2/g' demo-deployment.yaml
+kubectl apply -f demo-deployment.yaml
 ```
 ```bash
 kubectl rollout history deployment demodeployment-$USER
