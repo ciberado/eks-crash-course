@@ -104,6 +104,7 @@ spec:
       containers:
       - image: ciberado/pokemon-nodejs:0.0.1
         name: web
+EOF
 ```
 
 ```bash
