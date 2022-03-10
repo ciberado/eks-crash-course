@@ -3,17 +3,7 @@
 ## Configuration
 
 ```bash
-export AWS_DEFAULT_REGION=eu-west-1
-```
-
-```bash
-eksctl create cluster --name crashcourse
-eksctl get clusters --region eu-west-1
-```
-
-```bash
-aws eks --region eu-west-1 update-kubeconfig --name crashcourse
-kubectl get node
+kubectl config set-context --namespace demo-$USER --current
 ```
 
 ## Namespaces
@@ -29,7 +19,6 @@ EOF
 
 ```bash
 kubectl apply -f demo-ns.yaml
-kubectl config set-context --namespace demo-$USER --current
 ```
 
 ## Pod
@@ -47,6 +36,11 @@ spec:
   containers:
   - name: web
     image: ciberado/pokemon-nodejs:0.0.1
+    env:
+      - name: PORT
+        value: "3000"
+  - name: nginx
+    image: ciberado/nginx
 EOF
 ```
 
@@ -83,54 +77,9 @@ kubectl get services
 ADDR=$(kubectl get services pokemonservice -ojsonpath='{.status.loadBalancer.ingress[0].hostname}')
 echo Open http://$ADDR
 ```
-## Multicontainer pod and private service
 
 ```bash
-kubectl delete -f demo-pod.yaml --namespace demo-$USER
-kubectl delete -f demo-service.yaml --namespace demo-$USER
-sed -i 's/LoadBalancer/ClusterIP/g' demo-service.yaml
-kubectl apply -f demo-service.yaml --namespace demo-$USER
-```
-
-```bash
-cat << EOF > demo-pod.yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: pokemon
-  labels:
-    app: pokemon
-    type: webapp
-spec:
-  containers:
-  - name: web
-    image: ciberado/pokemon-nodejs:0.0.1
-    env:
-      - name: PORT
-        value: "3000"
-  - name: nginx
-    image: ciberado/nginx
-EOF
-```
-
-```bash
-kubectl apply -f demo-pod.yaml --namespace demo-$USER
-kubectl logs pokemon web
-kubectl logs pokemon nginx
-```
-
-```
-PORT=$(( ( RANDOM % 1000 )  + 8000 ))
-echo $PORT
-kubectl port-forward service/pokemonservice -n demo-$USER $PORT:80 --address='0.0.0.0' &
-PID=$!
-curl --head localhost:$PORT
-curl --head localhost:$PORT/?[1-10]
-```
-
-```
-kill -9 $PID
-kubectl delete -f .
+delete ns demo-$USER
 ```
 
 ## Elasticity and application lifecycle
@@ -200,30 +149,3 @@ kubectl rollout history deployment demodeployment-$USER
 kubectl rollout undo deployment demodeployment-$USER --to-revision=1
 ```
 
-## helm
-
-```bash
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm repo update
-```
-
-```bash
-helm install wp-k8s-$USER bitnami/wordpress --set serviceType=LoadBalancer
-```
-
-```bash
-export SERVICE_IP=$(kubectl get svc --namespace demo-$USER wp-k8s-$USER-wordpress \
-  --template "{{ range (index .status.loadBalancer.ingress 0) }}{{.}}{{ end }}")
-echo "WordPress URL: http://$SERVICE_IP/"
-echo "WordPress Admin URL: http://$SERVICE_IP/admin"
-echo Username: user
-echo Password: $(kubectl get secret --namespace demo-$USER wp-k8s-$USER-wordpress \
-  -o jsonpath="{.data.wordpress-password}" | base64 --decode)
-```
-
-```bash
-helm delete wp-k8s-$USER
-```
-   
- 
-You can find additional content from the long version of the training [here](k8s-course.zip).
