@@ -108,7 +108,56 @@ echo Open http://$ADDR
 kubectl delete -f demo-pod.yaml
 ```
 
-## Elasticity and application lifecycle
+## Elasticity
+
+```bash
+cat << EOF > demo-replicaset.yaml
+
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: demoreplicaset-$USER
+  labels:
+    app: pokemon
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: pokemon
+  template:
+    metadata:
+      labels:
+        app: pokemon
+    spec:
+      containers:
+      - image: ciberado/pokemon-nodejs:0.0.1
+        name: web
+EOF
+```
+
+```bash
+kubectl apply -f demo-replicaset.yaml
+kubectl get rs
+kubectl get pods -l app=pokemon
+```
+
+```bash
+sed -i 's/: 2/: 4/g' demo-replicaset.yaml
+kubectl apply -f demo-replicaset.yaml
+kubectl get pods
+```
+
+```bash
+kubectl scale rs/demoreplicaset-$USER --replicas=8
+kubectl get rs
+kubectl get pods
+```
+
+```bash
+kubectl delete -f demo-replicaset.yaml
+```
+
+## Application lifecycle
 
 ```bash
 cat << EOF > demo-deployment.yaml
@@ -135,12 +184,6 @@ EOF
 
 ```bash
 kubectl apply -f demo-deployment.yaml
-```
-
-```bash
-sed -i 's/: 2/: 4/g' demo-deployment.yaml
-kubectl apply -f demo-deployment.yaml
-kubectl get pods
 ```
 
 ```bash
