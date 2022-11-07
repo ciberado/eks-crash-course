@@ -5,25 +5,17 @@
 ```bash
 git clone https://github.com/ciberado/pokemon-nodejs
 cd pokemon-nodejs
-npm install
-```
-
-```
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.1/install.sh | bash
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-nvm install --lts
-```
-
-```bash
-npm install
-npm run start
 ```
 
 ```bash
 docker build -t pokemon-nodejs-$USER:0.0.1 .
 docker images
+```
+
+```bash
+PORT=$(( $(echo $USER | tr -dc '0-9') + 8100)); echo $PORT
+docker run -d -p $PORT:80 pokemon-nodejs-$USER:0.0.1
+curl localhost:$PORT
 ```
 
 ## Configuration
